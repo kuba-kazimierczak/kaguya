@@ -96,19 +96,36 @@ inline int property_index_function(lua_State *L) {
   // end
   // return metatable[index]
   // end
+
   static const int table = 1;
   static const int key = 2;
   static const int metatable = lua_upvalueindex(1);
   const char *strkey = lua_tostring(L, key);
 
-  if (lua_type(L, 1) == LUA_TUSERDATA && is_property_key(strkey)) {
-    int type = lua_getfield_rtype(
-        L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
-    if (type == LUA_TFUNCTION) {
-      lua_pushvalue(L, table);
-      lua_call(L, 1, 1);
-      return 1;
-    }
+  if (lua_type(L, 1) == LUA_TUSERDATA)
+  {
+	  if (is_property_key(strkey)) {
+		  int type = lua_getfield_rtype(
+			  L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
+		  if (type == LUA_TFUNCTION) {
+			  lua_pushvalue(L, table);
+			  lua_call(L, 1, 1);
+			  return 1;
+		  }
+	  }
+
+	  int type = lua_getfield_rtype(
+		  L, metatable, "__auxindex");
+	  if (type == LUA_TFUNCTION) {
+		  lua_pushvalue(L, table);
+		  lua_pushvalue(L, key);
+		  lua_call(L, 2, 2);
+		  bool hasValidResult = lua_toboolean(L, -2);
+		  if (hasValidResult) {
+			  lua_replace(L, -2);
+			  return 1;
+		  }
+	  }
   }
   lua_pushvalue(L, key);
   lua_gettable(L, metatable);
@@ -132,15 +149,27 @@ inline int property_newindex_function(lua_State *L) {
   static const int metatable = lua_upvalueindex(1);
   const char *strkey = lua_tostring(L, 2);
 
-  if (lua_type(L, 1) == LUA_TUSERDATA && is_property_key(strkey)) {
-    int type = lua_getfield_rtype(
-        L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
-    if (type == LUA_TFUNCTION) {
-      lua_pushvalue(L, table);
-      lua_pushvalue(L, value);
-      lua_call(L, 2, 0);
-      return 0;
-    }
+  if (lua_type(L, 1) == LUA_TUSERDATA) {
+	  if (is_property_key(strkey)) {
+		  int type = lua_getfield_rtype(
+			  L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
+		  if (type == LUA_TFUNCTION) {
+			  lua_pushvalue(L, table);
+			  lua_pushvalue(L, value);
+			  lua_call(L, 2, 0);
+			  return 0;
+		  }
+	  }
+
+	int type = lua_getfield_rtype(
+		L, metatable, "__auxnewindex");
+	if (type == LUA_TFUNCTION) {
+		lua_pushvalue(L, table);
+		lua_pushvalue(L, key);
+		lua_pushvalue(L, value);
+		lua_call(L, 3, 0);
+		return 1;
+	}
   }
   lua_pushvalue(L, key);
   lua_pushvalue(L, value);
@@ -298,7 +327,7 @@ public:
                                 // metamethod
     {
       if (member_map_.count("__index") == 0) {
-        Metatable::setPropertyIndexMetamethod(state, metatable_index);
+        Metatable::setPropertyIndexMetamethod(state, metatable_index/**/);
       }
 
       if (member_map_.count("__newindex") == 0) {
@@ -490,6 +519,26 @@ public:
     }
     property_map_[name] = AnyDataPusher(overload(getter, setter));
     return *this;
+  }
+
+  UserdataMetatable &setAuxiliaryIndexMethod(
+	std::tuple<bool, kaguya::LuaRef> (class_type::*getter)(const char*) const) {
+	  if (has_key("__auxindex")) {
+		  throw KaguyaException("Auxiliary index method is already registered.");
+		  return *this;
+	  }
+	  member_map_["__auxindex"] = AnyDataPusher(kaguya::function(getter));
+	  return *this;
+  }
+
+  UserdataMetatable &setAuxiliaryNewIndexMethod(
+	  void(class_type::*getter)(const char*, const kaguya::LuaRef&)) {
+	  if (has_key("__auxnewindex")) {
+		  throw KaguyaException("Auxiliary newIndex method is already registered.");
+		  return *this;
+	  }
+	  member_map_["__auxnewindex"] = AnyDataPusher(kaguya::function(getter));
+	  return *this;
   }
 
   /// @brief add non member function
