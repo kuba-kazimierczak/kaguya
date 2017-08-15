@@ -32,9 +32,9 @@ struct MultipleBase {};
 namespace kaguya {
 struct LuaCodeChunk {
   LuaCodeChunk(const std::string &src, const std::string &name = "")
-      : code_(src), chunk_name_(name) {}
+    : code_(src), chunk_name_(name) {}
   LuaCodeChunk(const char *src, const char *name = "")
-      : code_(src), chunk_name_(name ? name : "") {}
+    : code_(src), chunk_name_(name ? name : "") {}
   std::string code_;
   std::string chunk_name_;
 };
@@ -44,8 +44,8 @@ struct LuaCodeChunk {
 template <> struct lua_type_traits<LuaCodeChunk> {
   static int push(lua_State *state, const LuaCodeChunk &ref) {
     int status = luaL_loadbuffer(
-        state, ref.code_.c_str(), ref.code_.size(),
-        ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
+      state, ref.code_.c_str(), ref.code_.size(),
+      ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
     if (!except::checkErrorAndThrow(status, state)) {
       return 0;
     }
@@ -54,9 +54,9 @@ template <> struct lua_type_traits<LuaCodeChunk> {
 };
 struct LuaCodeChunkExecute : LuaCodeChunk {
   LuaCodeChunkExecute(const std::string &src, const std::string &name = "")
-      : LuaCodeChunk(src, name) {}
+    : LuaCodeChunk(src, name) {}
   LuaCodeChunkExecute(const char *src, const char *name = "")
-      : LuaCodeChunk(src, name) {}
+    : LuaCodeChunk(src, name) {}
 };
 typedef LuaCodeChunkExecute LuaCodeChunkResult;
 /// @ingroup lua_type_traits
@@ -64,8 +64,8 @@ typedef LuaCodeChunkExecute LuaCodeChunkResult;
 template <> struct lua_type_traits<LuaCodeChunkExecute> {
   static int push(lua_State *state, const LuaCodeChunkExecute &ref) {
     int status = luaL_loadbuffer(
-        state, ref.code_.c_str(), ref.code_.size(),
-        ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
+      state, ref.code_.c_str(), ref.code_.size(),
+      ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
     if (!except::checkErrorAndThrow(status, state)) {
       return 0;
     }
@@ -83,8 +83,8 @@ typedef std::map<std::string, AnyDataPusher> MemberMapType;
 
 inline bool is_property_key(const char *keyname) {
   return keyname &&
-         strncmp(keyname, KAGUYA_PROPERTY_PREFIX,
-                 sizeof(KAGUYA_PROPERTY_PREFIX) - 1) != 0;
+    strncmp(keyname, KAGUYA_PROPERTY_PREFIX,
+      sizeof(KAGUYA_PROPERTY_PREFIX) - 1) != 0;
 }
 inline int property_index_function(lua_State *L) {
   // Lua
@@ -104,28 +104,28 @@ inline int property_index_function(lua_State *L) {
 
   if (lua_type(L, 1) == LUA_TUSERDATA)
   {
-	  if (is_property_key(strkey)) {
-		  int type = lua_getfield_rtype(
-			  L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
-		  if (type == LUA_TFUNCTION) {
-			  lua_pushvalue(L, table);
-			  lua_call(L, 1, 1);
-			  return 1;
-		  }
-	  }
+    if (is_property_key(strkey)) {
+      int type = lua_getfield_rtype(
+        L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
+      if (type == LUA_TFUNCTION) {
+        lua_pushvalue(L, table);
+        lua_call(L, 1, 1);
+        return 1;
+      }
+    }
 
-	  int type = lua_getfield_rtype(
-		  L, metatable, "__auxindex");
-	  if (type == LUA_TFUNCTION) {
-		  lua_pushvalue(L, table);
-		  lua_pushvalue(L, key);
-		  lua_call(L, 2, 2);
-		  bool hasValidResult = lua_toboolean(L, -2);
-		  if (hasValidResult) {
-			  lua_replace(L, -2);
-			  return 1;
-		  }
-	  }
+    int type = lua_getfield_rtype(
+      L, metatable, "__auxindex");
+    if (type == LUA_TFUNCTION) {
+      lua_pushvalue(L, table);
+      lua_pushvalue(L, key);
+      lua_call(L, 2, 2);
+      bool hasValidResult = lua_toboolean(L, -2);
+      if (hasValidResult) {
+        lua_replace(L, -2);
+        return 1;
+      }
+    }
   }
   lua_pushvalue(L, key);
   lua_gettable(L, metatable);
@@ -150,26 +150,26 @@ inline int property_newindex_function(lua_State *L) {
   const char *strkey = lua_tostring(L, 2);
 
   if (lua_type(L, 1) == LUA_TUSERDATA) {
-	  if (is_property_key(strkey)) {
-		  int type = lua_getfield_rtype(
-			  L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
-		  if (type == LUA_TFUNCTION) {
-			  lua_pushvalue(L, table);
-			  lua_pushvalue(L, value);
-			  lua_call(L, 2, 0);
-			  return 0;
-		  }
-	  }
+    if (is_property_key(strkey)) {
+      int type = lua_getfield_rtype(
+        L, metatable, (KAGUYA_PROPERTY_PREFIX + std::string(strkey)).c_str());
+      if (type == LUA_TFUNCTION) {
+        lua_pushvalue(L, table);
+        lua_pushvalue(L, value);
+        lua_call(L, 2, 0);
+        return 0;
+      }
+    }
 
-	int type = lua_getfield_rtype(
-		L, metatable, "__auxnewindex");
-	if (type == LUA_TFUNCTION) {
-		lua_pushvalue(L, table);
-		lua_pushvalue(L, key);
-		lua_pushvalue(L, value);
-		lua_call(L, 3, 0);
-		return 1;
-	}
+    int type = lua_getfield_rtype(
+      L, metatable, "__auxnewindex");
+    if (type == LUA_TFUNCTION) {
+      lua_pushvalue(L, table);
+      lua_pushvalue(L, key);
+      lua_pushvalue(L, value);
+      lua_call(L, 3, 0);
+      return 1;
+    }
   }
   lua_pushvalue(L, key);
   lua_pushvalue(L, value);
@@ -242,16 +242,16 @@ inline void get_call_constructor_metatable(lua_State *L) {
 }
 
 inline void setMembers(lua_State *state, int metatable_index,
-                       const MemberMapType &member_map,
-                       const PropMapType &property_map) {
+  const MemberMapType &member_map,
+  const PropMapType &property_map) {
   for (MemberMapType::const_iterator it = member_map.begin();
-       it != member_map.end(); ++it) {
+    it != member_map.end(); ++it) {
     util::one_push(state, it->first);
     util::one_push(state, it->second);
     lua_rawset(state, metatable_index);
   }
   for (PropMapType::const_iterator it = property_map.begin();
-       it != property_map.end(); ++it) {
+    it != property_map.end(); ++it) {
     util::one_push(state, KAGUYA_PROPERTY_PREFIX + it->first);
     util::one_push(state, it->second);
     lua_rawset(state, metatable_index);
@@ -266,14 +266,14 @@ inline void setPropertyIndexMetamethod(lua_State *state, int metatable_index) {
 }
 
 inline void setPropertyNewIndexMetamethod(lua_State *state,
-                                          int metatable_index) {
+  int metatable_index) {
   lua_pushstring(state, "__newindex");
   lua_pushvalue(state, metatable_index);
   lua_pushcclosure(state, &property_newindex_function, 1);
   lua_rawset(state, metatable_index);
 }
 inline void setMultipleBase(lua_State *state, int metatable_index,
-                            int metabase_array_index) {
+  int metabase_array_index) {
   lua_createtable(state, 0, 1);
   int newmetaindex = lua_gettop(state);
   lua_pushstring(state, "__index");
@@ -281,7 +281,7 @@ inline void setMultipleBase(lua_State *state, int metatable_index,
                                               // multiple_base_index_function
   lua_pushcclosure(state, &multiple_base_index_function, 1);
   lua_rawset(state,
-             newmetaindex); // newmeta["__index"] = multiple_base_index_function
+    newmetaindex); // newmeta["__index"] = multiple_base_index_function
   lua_setmetatable(state, metatable_index); // metatable.setMetatable(newmeta);
 }
 }
@@ -294,37 +294,37 @@ public:
     addStaticFunction("__gc", &class_userdata::destructor<ObjectWrapperBase>);
 
     KAGUYA_STATIC_ASSERT(is_registerable<class_type>::value ||
-                             !traits::is_std_vector<class_type>::value,
-                         "std::vector is binding to lua-table by default.If "
-                         "you wants register for std::vector yourself,"
-                         "please define KAGUYA_NO_STD_VECTOR_TO_TABLE");
+      !traits::is_std_vector<class_type>::value,
+      "std::vector is binding to lua-table by default.If "
+      "you wants register for std::vector yourself,"
+      "please define KAGUYA_NO_STD_VECTOR_TO_TABLE");
 
     KAGUYA_STATIC_ASSERT(is_registerable<class_type>::value ||
-                             !traits::is_std_map<class_type>::value,
-                         "std::map is binding to lua-table by default.If you "
-                         "wants register for std::map yourself,"
-                         "please define KAGUYA_NO_STD_MAP_TO_TABLE");
+      !traits::is_std_map<class_type>::value,
+      "std::map is binding to lua-table by default.If you "
+      "wants register for std::map yourself,"
+      "please define KAGUYA_NO_STD_MAP_TO_TABLE");
 
     // can not register push specialized class
     KAGUYA_STATIC_ASSERT(is_registerable<class_type>::value,
-                         "Can not register specialized of type conversion "
-                         "class. e.g. std::tuple");
+      "Can not register specialized of type conversion "
+      "class. e.g. std::tuple");
   }
 
   bool pushCreateMatatable(lua_State *state) const {
     if (!class_userdata::newmetatable<class_type>(state)) {
       except::OtherError(state,
-                         typeid(class_type *).name() +
-                             std::string(" is already registered"));
+        typeid(class_type *).name() +
+        std::string(" is already registered"));
       return false;
     }
     int metatable_index = lua_gettop(state);
     Metatable::setMembers(state, metatable_index, member_map_, property_map_);
 
     if (!traits::is_same<base_class_type, void>::value ||
-        !property_map_.empty()) // if base class has property and derived class
-                                // hasnt property. need property access
-                                // metamethod
+      !property_map_.empty()) // if base class has property and derived class
+                              // hasnt property. need property access
+                              // metamethod
     {
       if (member_map_.count("__index") == 0) {
         Metatable::setPropertyIndexMetamethod(state, metatable_index/**/);
@@ -333,7 +333,8 @@ public:
       if (member_map_.count("__newindex") == 0) {
         Metatable::setPropertyNewIndexMetamethod(state, metatable_index);
       }
-    } else {
+    }
+    else {
       if (member_map_.count("__index") == 0) {
         lua_pushstring(state, "__index");
         lua_pushvalue(state, metatable_index);
@@ -342,7 +343,7 @@ public:
     }
 
     set_base_metatable(state, metatable_index,
-                       types::typetag<base_class_type>());
+      types::typetag<base_class_type>());
 
     if (lua_getmetatable(state, metatable_index)) // get base_metatable
     {
@@ -350,7 +351,8 @@ public:
       lua_pushcfunction(state, &Metatable::call_constructor_function);
       lua_rawset(state, -3); // base_metatable["__call"] =
                              // Metatable::call_constructor_function
-    } else {
+    }
+    else {
       Metatable::get_call_constructor_metatable(state);
       lua_setmetatable(state, metatable_index);
     }
@@ -368,7 +370,7 @@ public:
 #if KAGUYA_USE_CPP11
   template <typename... ArgTypes> UserdataMetatable &setConstructors() {
     addOverloadedFunctions(
-        "new", typename ConstructorFunction<class_type, ArgTypes>::type()...);
+      "new", typename ConstructorFunction<class_type, ArgTypes>::type()...);
     return *this;
   }
 #else
@@ -388,10 +390,10 @@ public:
 
 #endif
 
-  /// @brief add member property with getter function.(experimental)
-  /// @param name function name for lua
-  /// @param mem bind member data
-  template <typename Ret>
+    /// @brief add member property with getter function.(experimental)
+    /// @param name function name for lua
+    /// @param mem bind member data
+    template <typename Ret>
   UserdataMetatable &addProperty(const char *name, Ret class_type::*mem) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
@@ -406,7 +408,7 @@ public:
   /// @param getter getter function
   template <typename GetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (class_type::*getter)() const) {
+    GetType(class_type::*getter)() const) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -421,7 +423,7 @@ public:
   /// @param setter setter function
   template <typename GetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (*getter)(const class_type *)) {
+    GetType(*getter)(const class_type *)) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -435,7 +437,7 @@ public:
   /// @param setter setter function
   template <typename GetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (*getter)(const class_type &)) {
+    GetType(*getter)(const class_type &)) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -450,8 +452,8 @@ public:
   /// @param setter setter function
   template <typename GetType, typename SetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (class_type::*getter)() const,
-                                 void (class_type::*setter)(SetType)) {
+    GetType(class_type::*getter)() const,
+    void (class_type::*setter)(SetType)) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -467,8 +469,8 @@ public:
   /// @param setter setter function
   template <typename GetType, typename SetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (*getter)(const class_type *),
-                                 void (*setter)(class_type *, SetType)) {
+    GetType(*getter)(const class_type *),
+    void(*setter)(class_type *, SetType)) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -484,8 +486,8 @@ public:
   /// @param setter setter function
   template <typename GetType, typename SetType>
   UserdataMetatable &addProperty(const char *name,
-                                 GetType (*getter)(const class_type &),
-                                 void (*setter)(class_type &, SetType)) {
+    GetType(*getter)(const class_type &),
+    void(*setter)(class_type &, SetType)) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -512,7 +514,7 @@ public:
   /// @param setter setter function
   template <typename GetterType, typename SetterType>
   UserdataMetatable &addPropertyAny(const char *name, GetterType getter,
-                                    SetterType setter) {
+    SetterType setter) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
       return *this;
@@ -522,23 +524,23 @@ public:
   }
 
   UserdataMetatable &setAuxiliaryIndexMethod(
-	std::tuple<bool, kaguya::LuaRef> (class_type::*getter)(const char*) const) {
-	  if (has_key("__auxindex")) {
-		  throw KaguyaException("Auxiliary index method is already registered.");
-		  return *this;
-	  }
-	  member_map_["__auxindex"] = AnyDataPusher(kaguya::function(getter));
-	  return *this;
+    std::tuple<bool, kaguya::LuaRef>(class_type::*getter)(const char*) const) {
+    if (has_key("__auxindex")) {
+      throw KaguyaException("Auxiliary index method is already registered.");
+      return *this;
+    }
+    member_map_["__auxindex"] = AnyDataPusher(kaguya::function(getter));
+    return *this;
   }
 
   UserdataMetatable &setAuxiliaryNewIndexMethod(
-	  void(class_type::*getter)(const char*, const kaguya::LuaRef&)) {
-	  if (has_key("__auxnewindex")) {
-		  throw KaguyaException("Auxiliary newIndex method is already registered.");
-		  return *this;
-	  }
-	  member_map_["__auxnewindex"] = AnyDataPusher(kaguya::function(getter));
-	  return *this;
+    void(class_type::*getter)(const char*, const kaguya::LuaRef&)) {
+    if (has_key("__auxnewindex")) {
+      throw KaguyaException("Auxiliary newIndex method is already registered.");
+      return *this;
+    }
+    member_map_["__auxnewindex"] = AnyDataPusher(kaguya::function(getter));
+    return *this;
   }
 
   /// @brief add non member function
@@ -598,13 +600,13 @@ public:
   }
 
   KAGUYA_PP_REPEAT_DEF(KAGUYA_FUNCTION_MAX_OVERLOADS,
-                       KAGUYA_ADD_OVERLOAD_FUNCTION_DEF)
+    KAGUYA_ADD_OVERLOAD_FUNCTION_DEF)
 #undef KAGUYA_ADD_OVERLOAD_FUNCTION_DEF
 
-  /// @brief assign data by argument value.
-  /// @param name name for lua
-  /// @param d data
-  template <typename Data>
+    /// @brief assign data by argument value.
+    /// @param name name for lua
+    /// @param d data
+    template <typename Data>
   UserdataMetatable &addStaticField(const char *name, const Data &d) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered.");
@@ -621,8 +623,8 @@ public:
   UserdataMetatable &addFunction(const char *name, Fun f) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered. To "
-                                                "overload a function, use "
-                                                "addOverloadedFunctions");
+        "overload a function, use "
+        "addOverloadedFunctions");
       return *this;
     }
     member_map_[name] = AnyDataPusher(kaguya::function(f));
@@ -636,8 +638,8 @@ public:
   UserdataMetatable &addFunction(const char *name, Ret class_type::*f) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered. To "
-                                                "overload a function, use "
-                                                "addOverloadedFunctions");
+        "overload a function, use "
+        "addOverloadedFunctions");
       return *this;
     }
     member_map_[name] = AnyDataPusher(kaguya::function(f));
@@ -650,8 +652,8 @@ public:
   UserdataMetatable &addFunction(const char *name, PolymorphicMemberInvoker f) {
     if (has_key(name)) {
       throw KaguyaException(std::string(name) + " is already registered. To "
-                                                "overload a function, use "
-                                                "addOverloadedFunctions");
+        "overload a function, use "
+        "addOverloadedFunctions");
       return *this;
     }
     member_map_[name] = AnyDataPusher(kaguya::function(f));
@@ -662,10 +664,10 @@ private:
   void set_base_metatable(lua_State *, int, types::typetag<void>) const {}
   template <class Base>
   void set_base_metatable(lua_State *state, int metatable_index,
-                          types::typetag<Base>) const {
+    types::typetag<Base>) const {
     class_userdata::get_metatable<Base>(state);
     lua_setmetatable(state,
-                     metatable_index); // metatable.setMetatable(newmeta);
+      metatable_index); // metatable.setMetatable(newmeta);
     PointerConverter &pconverter = PointerConverter::get(state);
     pconverter.add_type_conversion<Base, class_type>();
   }
@@ -674,29 +676,29 @@ private:
 
   template <typename Base>
   void metatables(lua_State *state, int metabase_array_index,
-                  PointerConverter &pvtreg,
-                  types::typetag<MultipleBase<Base> >) const {
+    PointerConverter &pvtreg,
+    types::typetag<MultipleBase<Base> >) const {
     class_userdata::get_metatable<Base>(state);
     lua_rawseti(state, metabase_array_index,
-                lua_rawlen(state, metabase_array_index) + 1);
+      lua_rawlen(state, metabase_array_index) + 1);
     pvtreg.add_type_conversion<Base, class_type>();
   }
   template <typename Base, typename... Remain>
   void metatables(lua_State *state, int metabase_array_index,
-                  PointerConverter &pvtreg,
-                  types::typetag<MultipleBase<Base, Remain...> >) const {
+    PointerConverter &pvtreg,
+    types::typetag<MultipleBase<Base, Remain...> >) const {
     class_userdata::get_metatable<Base>(state);
     lua_rawseti(state, metabase_array_index,
-                lua_rawlen(state, metabase_array_index) + 1);
+      lua_rawlen(state, metabase_array_index) + 1);
     pvtreg.add_type_conversion<Base, class_type>();
     metatables(state, metabase_array_index, pvtreg,
-               types::typetag<MultipleBase<Remain...> >());
+      types::typetag<MultipleBase<Remain...> >());
   }
 
   template <typename... Bases>
   void
-  set_base_metatable(lua_State *state, int metatable_index,
-                     types::typetag<MultipleBase<Bases...> > metatypes) const {
+    set_base_metatable(lua_State *state, int metatable_index,
+      types::typetag<MultipleBase<Bases...> > metatypes) const {
     PointerConverter &pconverter = PointerConverter::get(state);
 
     lua_createtable(state, sizeof...(Bases), 0);
@@ -724,12 +726,12 @@ private:
   }
 
   KAGUYA_PP_REPEAT_DEF(KAGUYA_CLASS_MAX_BASE_CLASSES,
-                       KAGUYA_MULTIPLE_INHERITANCE_SETBASE_DEF)
+    KAGUYA_MULTIPLE_INHERITANCE_SETBASE_DEF)
 #undef KAGUYA_MULTIPLE_INHERITANCE_SETBASE_DEF
 #undef KAGUYA_GET_BASE_METATABLE
 #endif
 
-  bool has_key(const std::string &key) {
+    bool has_key(const std::string &key) {
     if (member_map_.count(key) > 0) {
       return true;
     }
